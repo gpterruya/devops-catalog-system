@@ -52,5 +52,13 @@ services:
       - catalog-service
       - order-service
 
+  frontend:
+    build: ./frontend-web
+    container_name: frontend-web
+    ports:
+      - "3000:80"
+    depends_on:
+      - gateway
+
 volumes:
   pg_data:

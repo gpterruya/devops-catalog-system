@@ -5,9 +5,8 @@ FROM python:3.11-slim AS builder
 
 WORKDIR /app
 
-# Copia e instala dependências (em uma camada isolada)
 COPY requirements.txt .
-RUN pip install --user -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
 # ===========================
 # Etapa 2: runtime
@@ -19,18 +18,14 @@ RUN useradd -m appuser
 
 WORKDIR /app
 
-# Copia dependências da etapa anterior
-COPY --from=builder /root/.local /root/.local
-
-# Ajusta PATH
-ENV PATH=/root/.local/bin:$PATH
+# Copia libs instaladas globalmente
+COPY --from=builder /usr/local /usr/local
 
 # Copia o código do serviço
 COPY app ./app
 
 USER appuser
 
-# Exposição padrão do FastAPI
 EXPOSE 8000
 
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

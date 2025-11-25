@@ -1,49 +1,15 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Navbar from './components/Navbar'
 import ProductList from './components/ProductList'
 import CartModal from './components/CartModal'
 import Swal from 'sweetalert2'
 import 'sweetalert2/dist/sweetalert2.min.css'
-
-const PLACEHOLDER_IMAGE =
-  'https://www.gsuplementos.com.br/upload/growth-layout-personalizado/produto/185/produto-selo-topo-new-v3.png'
-
-const PRODUCTS = [
-  {
-    id: 1,
-    name: 'Notebook DevOps Pro',
-    description: 'Notebook de alta performance para desenvolvimento e pipelines CI/CD.',
-    price: 5999.9,
-    stock: 4,
-    image: PLACEHOLDER_IMAGE,
-  },
-  {
-    id: 2,
-    name: 'Curso Kubernetes Essentials',
-    description: 'Aprenda os fundamentos de orquestração de containers.',
-    price: 399.9,
-    stock: 12,
-    image: PLACEHOLDER_IMAGE,
-  },
-  {
-    id: 3,
-    name: 'Livro - Observabilidade na Prática',
-    description: 'Guia completo de logs, métricas, tracing e boas práticas.',
-    price: 129.9,
-    stock: 0, // indisponível
-    image: PLACEHOLDER_IMAGE,
-  },
-  {
-    id: 4,
-    name: 'Ferramenta de CI/CD - Licença Anual',
-    description: 'Pipeline automatizado para testes, builds e deploy.',
-    price: 999.9,
-    stock: 6,
-    image: PLACEHOLDER_IMAGE,
-  },
-]
+import { apiCatalog, apiOrders } from './api'
 
 function App() {
+  const [products, setProducts] = useState([])
+  const [loading, setLoading] = useState(true)
+
   // carrinho = [{ product, quantity }]
   const [cartItems, setCartItems] = useState([])
   const [isCartOpen, setIsCartOpen] = useState(false)
@@ -51,8 +17,27 @@ function App() {
 
   const selectedCount = cartItems.reduce(
     (total, item) => total + item.quantity,
-    0,
+    0
   )
+
+  // ============================
+  // LOAD PRODUCTS FROM API
+  // ============================
+  useEffect(() => {
+    const loadProducts = async () => {
+      try {
+        const res = await apiCatalog.get('/products')
+        setProducts(res.data)
+      } catch (err) {
+        console.error('Erro ao carregar produtos:', err)
+        Swal.fire('Erro', 'Falha ao carregar produtos', 'error')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadProducts()
+  }, [])
 
   const handleSelect = (product) => {
     if (product.stock === 0) return
@@ -64,17 +49,13 @@ function App() {
         return [...prev, { product, quantity: 1 }]
       }
 
-      const currentQuantity = existing.quantity
       const maxStock = product.stock ?? Infinity
-
-      if (currentQuantity >= maxStock) {
-        return prev
-      }
+      if (existing.quantity >= maxStock) return prev
 
       return prev.map((item) =>
         item.product.id === product.id
           ? { ...item, quantity: item.quantity + 1 }
-          : item,
+          : item
       )
     })
   }
@@ -93,34 +74,43 @@ function App() {
 
     setIsSubmitting(true)
 
-    // mock de chamada para /api/orders
-    setTimeout(() => {
-      setIsSubmitting(false)
+    try {
+      await apiOrders.post('/orders', {
+        items: cartItems.map((c) => ({
+          product_id: c.product.id,
+          quantity: c.quantity,
+        })),
+      })
+
       setCartItems([])
       setIsCartOpen(false)
 
       Swal.fire({
         title: 'Pedido realizado!',
-        text: 'Sua compra foi finalizada com sucesso (mock).',
+        text: 'Sua compra foi processada com sucesso.',
         icon: 'success',
         confirmButtonText: 'OK',
         confirmButtonColor: '#22c55e',
         background: '#0f172a',
         color: '#e5e7eb',
       })
-    }, 800)
+    } catch (error) {
+      Swal.fire('Erro', 'Falha ao enviar pedido', 'error')
+    } finally {
+      setIsSubmitting(false)
+    }
   }
+
+  if (loading)
+    return <h1 style={{ color: 'white', textAlign: 'center' }}>Carregando...</h1>
 
   return (
     <div className="app-container">
-      <Navbar
-        selectedCount={selectedCount}
-        onCartClick={handleOpenCart}
-      />
+      <Navbar selectedCount={selectedCount} onCartClick={handleOpenCart} />
 
       <main className="content">
         <h1 className="page-title">Catálogo de Produtos</h1>
-        <ProductList products={PRODUCTS} onSelect={handleSelect} />
+        <ProductList products={products} onSelect={handleSelect} />
       </main>
 
       <CartModal

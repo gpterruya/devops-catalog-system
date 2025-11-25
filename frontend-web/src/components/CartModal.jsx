@@ -64,7 +64,7 @@ function CartModal({ isOpen, items, onClose, onConfirm, isSubmitting }) {
               onClick={onConfirm}
               disabled={items.length === 0 || isSubmitting}
             >
-              {isSubmitting ? 'Finalizando...' : 'Finalizar compra (mock)'}
+              {isSubmitting ? 'Finalizando...' : 'Finalizar compra'}
             </button>
           </div>
         </footer>

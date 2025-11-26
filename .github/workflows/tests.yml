@@ -1,0 +1,44 @@
+name: CI - Tests & Lint
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+
+jobs:
+  test-python-services:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        service: [catalog-service, order-service, worker]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          cd ${{ matrix.service }}
+          pip install -r requirements.txt
+
+      - name: Run Lint
+        run: |
+          cd ${{ matrix.service }}
+          flake8 .
+
+      - name: Run Tests
+        run: |
+          cd ${{ matrix.service }}
+          pytest --cov=app --cov-report=xml
+
+      - name: Upload coverage artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-${{ matrix.service }}
+          path: ${{ matrix.service }}/coverage.xml

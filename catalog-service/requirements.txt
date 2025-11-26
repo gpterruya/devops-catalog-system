@@ -11,3 +11,4 @@ pytest
 pytest-cov
 httpx
 flake8
+coverage

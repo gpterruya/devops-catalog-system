@@ -23,3 +23,8 @@ app.include_router(products.router)
 @app.get("/")
 def root():
     return {"message": "Catalog Service is running 🚀"}
+
+@app.get("/health")
+def health_check():
+    return {"status": "ok", "service": "catalog-service"}
+

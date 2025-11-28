@@ -1,9 +1,9 @@
 import axios from 'axios'
 
 export const apiCatalog = axios.create({
-  baseURL: 'http://localhost:8000'
+  baseURL: 'http://localhost:8080/catalog'
 })
 
 export const apiOrders = axios.create({
-  baseURL: 'http://localhost:8001'
+  baseURL: 'http://localhost:8080/orders'
 })

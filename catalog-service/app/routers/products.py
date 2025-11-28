@@ -15,6 +15,7 @@ def create_product(product: schemas.ProductCreate, db: Session = Depends(get_db)
     return new_product
 
 
+@router.get("", response_model=list[schemas.ProductResponse])
 @router.get("/", response_model=list[schemas.ProductResponse])
 def get_products(db: Session = Depends(get_db)):
     return db.query(models.Product).all()

@@ -2,7 +2,7 @@ import json
 import redis.asyncio as redis
 from app.schemas import Order
 
-REDIS_URL = "redis://localhost:6379"
+REDIS_URL = "redis://redis:6379"
 QUEUE_NAME = "orders_queue"
 
 

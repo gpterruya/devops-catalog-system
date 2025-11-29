@@ -6,7 +6,13 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://postgres:postgres@localhost:5432/catalog_db")
+host = os.getenv("DATABASE_HOST")
+port = os.getenv("DATABASE_PORT")
+user = os.getenv("DATABASE_USER")
+password = os.getenv("DATABASE_PASSWORD")
+dbname = os.getenv("DATABASE_NAME")
+
+DATABASE_URL = f"postgresql://{user}:{password}@{host}:{port}/{dbname}"
 
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

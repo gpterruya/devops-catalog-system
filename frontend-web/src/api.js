@@ -1,9 +1,11 @@
 import axios from 'axios'
 
+const API_BASE_URL = import.meta.env.VITE_API_URL ?? ''
+
 export const apiCatalog = axios.create({
-  baseURL: 'http://localhost:8080/catalog'
+  baseURL: `${API_BASE_URL}/catalog`,
 })
 
 export const apiOrders = axios.create({
-  baseURL: 'http://localhost:8080/orders'
+  baseURL: `${API_BASE_URL}/orders`,
 })

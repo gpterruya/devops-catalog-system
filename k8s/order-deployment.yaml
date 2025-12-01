@@ -18,7 +18,7 @@ spec:
           image: gpterruya/order-service:latest
           imagePullPolicy: Always
           ports:
-            - containerPort: 8001
+            - containerPort: 8000
           env:
             - name: REDIS_HOST
               value: "redis"
@@ -27,7 +27,7 @@ spec:
           livenessProbe:
             httpGet:
               path: /health
-              port: 8001
+              port: 8000
             initialDelaySeconds: 10
             periodSeconds: 10
             timeoutSeconds: 2
@@ -36,7 +36,7 @@ spec:
           readinessProbe:
             httpGet:
               path: /health
-              port: 8001
+              port: 8000
             initialDelaySeconds: 5
             periodSeconds: 5
             timeoutSeconds: 2

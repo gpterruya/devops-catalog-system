@@ -15,8 +15,8 @@ spec:
     spec:
       containers:
         - name: frontend-web
-          image: frontend-web:latest
-          imagePullPolicy: IfNotPresent
+          image: gpterruya/frontend-web:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 80
           resources:

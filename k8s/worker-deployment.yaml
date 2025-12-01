@@ -15,8 +15,8 @@ spec:
     spec:
       containers:
         - name: order-worker
-          image: order-worker:latest
-          imagePullPolicy: Never
+          image: gpterruya/order-worker:latest
+          imagePullPolicy: Always
           env:
             - name: REDIS_HOST
               value: "redis"

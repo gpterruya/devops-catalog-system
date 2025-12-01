@@ -1,0 +1,147 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+env:
+  REGISTRY: docker.io
+  IMAGE_PREFIX: ${{ secrets.DOCKERHUB_USER }}
+
+jobs:
+  test-python-services:
+    name: Run Tests & Lint (Python Services)
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        service: [catalog-service, order-service, worker]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          cd ${{ matrix.service }}
+          pip install -r requirements.txt
+
+      - name: Run Lint
+        run: |
+          cd ${{ matrix.service }}
+          flake8 .
+
+      - name: Run Tests
+        run: |
+          cd ${{ matrix.service }}
+          pytest --cov=app --cov-report=xml
+
+      - name: Upload coverage artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-${{ matrix.service }}
+          path: ${{ matrix.service }}/coverage.xml
+
+  build-and-push:
+    name: Build & Push Docker Images
+    needs: test-python-services
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USER }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      # catalog-service
+      - name: Build & push catalog-service image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./catalog-service
+          push: true
+          tags: |
+            ${{ env.IMAGE_PREFIX }}/catalog-service:latest
+            ${{ env.IMAGE_PREFIX }}/catalog-service:${{ github.sha }}
+
+      # order-service
+      - name: Build & push order-service image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./order-service
+          push: true
+          tags: |
+            ${{ env.IMAGE_PREFIX }}/order-service:latest
+            ${{ env.IMAGE_PREFIX }}/order-service:${{ github.sha }}
+
+      # worker (order-worker)
+      - name: Build & push order-worker image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./worker
+          push: true
+          tags: |
+            ${{ env.IMAGE_PREFIX }}/order-worker:latest
+            ${{ env.IMAGE_PREFIX }}/order-worker:${{ github.sha }}
+
+      # api-gateway (NGINX)
+      - name: Build & push api-gateway image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./gateway
+          push: true
+          tags: |
+            ${{ env.IMAGE_PREFIX }}/api-gateway:latest
+            ${{ env.IMAGE_PREFIX }}/api-gateway:${{ github.sha }}
+
+      # frontend-web (React/Vite)
+      - name: Build & push frontend-web image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./frontend-web
+          push: true
+          tags: |
+            ${{ env.IMAGE_PREFIX }}/frontend-web:latest
+            ${{ env.IMAGE_PREFIX }}/frontend-web:${{ github.sha }}
+
+  deploy:
+    name: Deploy to Kubernetes (Minikube in CI)
+    needs: build-and-push
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v4
+        with:
+          version: "latest"
+
+      - name: Set up Minikube
+        uses: medyagh/setup-minikube@latest
+
+      - name: Start Minikube
+        run: |
+          minikube start --driver=docker
+          kubectl get nodes
+
+      - name: Apply namespace (if not created yet)
+        run: |
+          if [ -f "k8s/namespace.yaml" ]; then
+            kubectl apply -f k8s/namespace.yaml
+          fi
+
+      - name: Deploy all k8s manifests
+        run: |
+          kubectl apply -f k8s/
+          kubectl get pods -A

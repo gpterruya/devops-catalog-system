@@ -15,8 +15,8 @@ spec:
     spec:
       containers:
         - name: catalog-service
-          image: catalog-service:latest
-          imagePullPolicy: Never
+          image: gpterruya/catalog-service:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 8000
           env:

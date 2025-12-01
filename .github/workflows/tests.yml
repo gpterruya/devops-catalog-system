@@ -1,12 +1,12 @@
 name: CI - Tests & Lint
 
 on:
-  push:
-    branches: ["main"]
   pull_request:
+    branches: ["main"]
 
 jobs:
   test-python-services:
+    name: Tests & Lint (Python Services)
     runs-on: ubuntu-latest
 
     strategy:

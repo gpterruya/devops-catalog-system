@@ -1,1 +1,8 @@
 node_modules
+__pycache__/
+*.pyc
+*.pyo
+*.pyc
+.coverage
+coverage.xml
+test.db

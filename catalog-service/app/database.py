@@ -1,25 +1,27 @@
+import os
+
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-import os
 from dotenv import load_dotenv
 
 load_dotenv()
 
-host = os.getenv("DATABASE_HOST")
-port = os.getenv("DATABASE_PORT")
-user = os.getenv("DATABASE_USER")
-password = os.getenv("DATABASE_PASSWORD")
-dbname = os.getenv("DATABASE_NAME")
+database_url = os.getenv("DATABASE_URL")
 
-DATABASE_URL = f"postgresql://{user}:{password}@{host}:{port}/{dbname}"
+if not database_url:
+    host = os.getenv("DATABASE_HOST", "postgres")
+    port = os.getenv("DATABASE_PORT", "5432")
+    user = os.getenv("DATABASE_USER", "catalog_user")
+    password = os.getenv("DATABASE_PASSWORD", "catalog_pass")
+    dbname = os.getenv("DATABASE_NAME", "catalogdb")
 
-engine = create_engine(DATABASE_URL)
+    database_url = f"postgresql://{user}:{password}@{host}:{port}/{dbname}"
+
+engine = create_engine(database_url)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 Base = declarative_base()
-
-# Dependency para FastAPI
 
 
 def get_db():

@@ -2,7 +2,7 @@ name: CI - Tests & Lint
 
 on:
   pull_request:
-    branches: ["main"]
+    branches: ["master"]
 
 jobs:
   test-python-services:
@@ -35,7 +35,11 @@ jobs:
       - name: Run Tests
         run: |
           cd ${{ matrix.service }}
-          pytest --cov=app --cov-report=xml
+          if [ "${{ matrix.service }}" = "worker" ]; then
+            pytest --cov=worker --cov-report=xml
+          else
+            pytest --cov=app --cov-report=xml
+          fi
 
       - name: Upload coverage artifact
         uses: actions/upload-artifact@v4

@@ -4,16 +4,14 @@ from alembic import context
 import os
 from dotenv import load_dotenv
 
-# Importa a base de modelos
 from app.database import Base
-from app import models
+from app import models  # noqa: F401
+
 
 load_dotenv()
 
-# Configuração base do Alembic
 config = context.config
 
-# Substitui o valor do alembic.ini pela variável de ambiente (se existir)
 database_url = os.getenv("DATABASE_URL")
 if database_url:
     config.set_main_option("sqlalchemy.url", database_url)
@@ -22,6 +20,7 @@ if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
 target_metadata = Base.metadata
+
 
 def run_migrations_offline():
     """Executa migrações em modo offline."""
@@ -36,6 +35,7 @@ def run_migrations_offline():
     with context.begin_transaction():
         context.run_migrations()
 
+
 def run_migrations_online():
     """Executa migrações em modo online (com conexão ativa)."""
     connectable = engine_from_config(
@@ -49,6 +49,7 @@ def run_migrations_online():
 
         with context.begin_transaction():
             context.run_migrations()
+
 
 if context.is_offline_mode():
     run_migrations_offline()

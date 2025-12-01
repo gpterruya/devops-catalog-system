@@ -1,1 +1,4 @@
 redis
+flake8
+pytest
+pytest-cov

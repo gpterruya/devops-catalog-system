@@ -28,3 +28,4 @@ def root():
 def health_check():
     return {"status": "ok", "service": "catalog-service"}
 
+# a

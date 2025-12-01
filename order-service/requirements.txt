@@ -7,3 +7,7 @@ pytest-cov
 flake8
 coverage
 httpx
+
+prometheus-fastapi-instrumentator
+structlog
+python-json-logger

@@ -3,9 +3,17 @@ kind: Service
 metadata:
   name: catalog-service
   namespace: ecommerce
+  labels:
+    app: catalog-service
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "8000"
+    prometheus.io/path: "/metrics"
 spec:
   selector:
     app: catalog-service
   ports:
-    - port: 8000
+    - name: http
+      port: 8000
       targetPort: 8000
+  type: ClusterIP
